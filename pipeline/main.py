@@ -24,31 +24,31 @@ from pipeline.agent_executor import execute_all
 logger = logging.getLogger(__name__)
 
 
-def run_pipeline(file_path: str | Path, *,
+def run_pipeline(csv_path: str | Path, *,
                  max_workers: int = 4) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """
     Run the full video-asset retrieval pipeline.
 
     Parameters
     ----------
-    file_path : str | Path
-        Path to an ``.xlsx`` or ``.csv`` spreadsheet.
+    csv_path : str | Path
+        Path to a ``.csv`` or ``.xlsx`` spreadsheet containing asset URLs.
     max_workers : int
         Thread-pool size for parallel execution.
 
     Returns
     -------
     (records, summary)
-        *records* — list of unified dicts with all fields populated.
+        *records* — list of unified dicts with all stages populated.
         *summary* — ``{"total": X, "success": Y, "failure": Z}``.
     """
-    file_path = Path(file_path)
+    csv_path = Path(csv_path)
     logger.info("=" * 60)
-    logger.info("  PIPELINE START  |  %s", file_path.name)
+    logger.info("  PIPELINE START  |  %s", csv_path.name)
     logger.info("=" * 60)
 
     # Step 1 — Extraction
-    records = extract_urls(file_path)
+    records = extract_urls(csv_path)
     if not records:
         logger.warning("No URLs found. Pipeline finished with 0 records.")
         return [], {"total": 0, "success": 0, "failure": 0}

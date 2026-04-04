@@ -4,7 +4,8 @@ run.py — CLI entry-point for the Video Asset Retrieval Pipeline
 ================================================================
 
 Usage:
-    python run.py                       # defaults to sample_assets.xlsx
+    python run.py                       # defaults to sample_asset.csv
+    python run.py path/to/file.csv
     python run.py path/to/file.xlsx
 """
 
@@ -27,7 +28,7 @@ def main() -> None:
     )
 
     # Resolve input file
-    input_file = sys.argv[1] if len(sys.argv) > 1 else "sample_assets.xlsx"
+    input_file = sys.argv[1] if len(sys.argv) > 1 else "sample_asset.csv"
     input_path = Path(input_file)
 
     if not input_path.exists():

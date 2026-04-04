@@ -12,9 +12,12 @@ Key upgrades:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import random
+import shutil
+import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
@@ -29,7 +32,8 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRIES: int = 2
 MAX_WORKERS: int = 4
-LOG_DIR = Path("logs")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+LOG_DIR = ROOT_DIR / "logs"
 LOG_FILE = LOG_DIR / "download_log.jsonl"
 
 
@@ -37,24 +41,76 @@ LOG_FILE = LOG_DIR / "download_log.jsonl"
 # JSONL logger
 # ---------------------------------------------------------------------------
 
-def _append_jsonl(record: dict) -> None:
+def _append_jsonl(result: dict) -> None:
     """Append a single JSON line to the persistent log file."""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        f.write(json.dumps(result, ensure_ascii=False) + "\n")
 
 
 # ---------------------------------------------------------------------------
-# Individual agent functions (simulated)
+# Individual agent functions
 # ---------------------------------------------------------------------------
+
+def _ensure_yt_dlp_available() -> str:
+    binary = shutil.which("yt-dlp")
+    if binary:
+        return binary
+
+    binary = shutil.which("yt_dlp")
+    if binary:
+        return binary
+
+    raise RuntimeError(
+        "yt-dlp executable not found. Install yt-dlp and ensure it is on PATH."
+    )
+
+
+def _build_youtube_filename(url: str) -> str:
+    short_hash = hashlib.sha1(url.encode("utf-8")).hexdigest()[:8]
+    return f"youtube_{short_hash}.mp4"
+
 
 def youtube_agent(record: dict) -> None:
-    """Simulate yt-dlp download."""
+    """Download a YouTube video using yt-dlp and update the record with the real file path."""
     url = record["url"]
-    time.sleep(random.uniform(0.05, 0.15))
-    if "broken" in url.lower():
-        raise RuntimeError("yt-dlp returned non-zero exit code (simulated)")
-    record["message"] = f"Downloaded via yt-dlp -> youtube_{hash(url) & 0xFFFF:04x}.mp4"
+    downloads_dir = Path("downloads")
+    downloads_dir.mkdir(parents=True, exist_ok=True)
+
+    output_name = _build_youtube_filename(url)
+    output_template = str(downloads_dir / output_name)
+    yt_dlp_exec = _ensure_yt_dlp_available()
+
+    command = [
+        yt_dlp_exec,
+        "-o",
+        output_template,
+        "--recode-video",
+        "mp4",
+        "--no-warnings",
+        url,
+    ]
+
+    try:
+        completed = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"yt-dlp failed: {exc.returncode} - {exc.output.strip()}"
+        ) from exc
+
+    downloaded_path = downloads_dir / output_name
+    if not downloaded_path.exists():
+        raise RuntimeError(
+            f"yt-dlp reported success but output file was not found: {downloaded_path}"
+        )
+
+    record["message"] = f"Downloaded -> {downloaded_path.as_posix()}"
 
 
 def drive_agent(record: dict) -> None:
@@ -95,11 +151,21 @@ _DISPATCH: dict[str, Callable[[dict], None]] = {
 # ---------------------------------------------------------------------------
 # Single-record execution with retries
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+
+def _build_execution_summary(record: dict) -> dict:
+    return {
+        "url": record.get("url", ""),
+        "status": record.get("status", "failure"),
+        "message": record.get("message", ""),
+        "timestamp": record.get("timestamp", ""),
+    }
+
 
 def _execute_one(record: dict) -> dict:
     """
     Execute a single download task with up to ``MAX_RETRIES`` retries.
-    Mutates the record **in-place** and returns it.
+    Mutates the record **in-place** and returns a structured execution summary.
     """
     agent_name = record.get("agent", "fallback_agent")
     handler = _DISPATCH.get(agent_name, fallback_agent)
@@ -114,8 +180,9 @@ def _execute_one(record: dict) -> dict:
                 "  [OK]  %-16s %s  (attempt %d)",
                 agent_name, record["url"][:60], attempt,
             )
-            _append_jsonl(record)
-            return record
+            result = _build_execution_summary(record)
+            _append_jsonl(result)
+            return result
         except Exception as exc:
             last_error = str(exc)
             if attempt <= MAX_RETRIES:
@@ -134,12 +201,14 @@ def _execute_one(record: dict) -> dict:
         "  [FAIL] %-16s %s — %s",
         agent_name, record["url"][:60], last_error,
     )
-    _append_jsonl(record)
-    return record
+    result = _build_execution_summary(record)
+    _append_jsonl(result)
+    return result
 
 
 # ---------------------------------------------------------------------------
 # Batch execution (parallel)
+# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
 def execute_all(records: list[dict], *,
@@ -154,10 +223,21 @@ def execute_all(records: list[dict], *,
 
     # ThreadPoolExecutor to run downloads concurrently
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futures = {pool.submit(_execute_one, rec): idx
-                   for idx, rec in enumerate(records)}
-        for future in as_completed(futures):
-            future.result()                              # propagate unexpected errors
+        future_to_record = {pool.submit(_execute_one, rec): rec
+                            for rec in records}
+        for future in as_completed(future_to_record):
+            rec = future_to_record[future]
+            try:
+                future.result()
+            except Exception as exc:
+                rec["status"] = "failure"
+                rec["message"] = str(exc)
+                rec["timestamp"] = datetime.now(timezone.utc).isoformat()
+                logger.error(
+                    "  [ERROR] %-16s %s — %s",
+                    rec.get("agent", "fallback_agent"), rec["url"][:60], exc,
+                )
+                _append_jsonl(_build_execution_summary(rec))
 
     success = sum(1 for r in records if r["status"] == "success")
     failure = len(records) - success
