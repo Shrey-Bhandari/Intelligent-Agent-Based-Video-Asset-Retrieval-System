@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Asset Processing System</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-blur"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">Video Asset Processing System</h1>
+                <p class="subtitle">Upload. Process. Organize.</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 8V32M12 20L24 8L36 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 36H40" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="8" y="38" width="32" height="2" fill="currentColor" rx="1"/>
+                        </svg>
+                    </div>
+                    <h2 class="upload-title">Drop your file here</h2>
+                    <p class="upload-text">or <span class="upload-link">click to browse</span></p>
+                    <p class="upload-hint">Supports CSV and Excel files (.csv, .xlsx)</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx" hidden>
+                </div>
+            </section>
+
+            <!-- Process Button -->
+            <section class="button-section">
+                <button class="process-btn" id="processBtn" disabled>
+                    <span class="btn-text">Start Processing</span>
+                    <span class="btn-spinner"></span>
+                </button>
+            </section>
+
+            <!-- Loading State -->
+            <div class="loading-container" id="loadingContainer" style="display: none;">
+                <div class="spinner"></div>
+                <p class="loading-text">Processing your assets...</p>
+                <p class="loading-subtext" id="loadingSubtext">This may take a minute</p>
+                
+                <!-- Current URL being processed -->
+                <p class="current-url"></p>
+            </div>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <!-- Summary Box -->
+                <div class="summary-box glass">
+                    <div class="summary-item">
+                        <span class="summary-label">Total</span>
+                        <span class="summary-value" id="summaryTotal">0</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item success">
+                        <span class="summary-label">Success</span>
+                        <span class="summary-value" id="summarySuccess">0</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item failure">
+                        <span class="summary-label">Failure</span>
+                        <span class="summary-value" id="summaryFailure">0</span>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="results-wrapper">
+                    <h2 class="results-title">Processing Results</h2>
+                    <div class="results-container" id="resultsContainer">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <button class="reset-btn" id="resetBtn">
+                    Process Another File
+                </button>
+
+                <!-- Download Report Button -->
+                <button class="download-report-btn" id="downloadReportBtn">
+                    Download Report
+                </button>
+            </section>
+
+            <!-- Error State -->
+            <div class="error-container" id="errorContainer" style="display: none;">
+                <div class="error-box glass">
+                    <div class="error-icon">⚠️</div>
+                    <h3 class="error-title">Processing Failed</h3>
+                    <p class="error-message" id="errorMessage"></p>
+                    <button class="reset-btn" id="errorResetBtn">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Video Asset Processing Pipeline • Built for efficiency</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

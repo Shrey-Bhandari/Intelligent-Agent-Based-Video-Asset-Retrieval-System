@@ -45,7 +45,7 @@ def _append_jsonl(result: dict) -> None:
     """Append a single JSON line to the persistent log file."""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(json.dumps(result, ensure_ascii=False) + "\n")
+        f.write(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
 
 
 # ---------------------------------------------------------------------------
@@ -111,6 +111,7 @@ def youtube_agent(record: dict) -> None:
         )
 
     record["message"] = f"Downloaded -> {downloaded_path.as_posix()}"
+    record["download_link"] = f"/downloads/{output_name}"
 
 
 def drive_agent(record: dict) -> None:
@@ -159,6 +160,8 @@ def _build_execution_summary(record: dict) -> dict:
         "status": record.get("status", "failure"),
         "message": record.get("message", ""),
         "timestamp": record.get("timestamp", ""),
+        "platform": record.get("platform", ""),
+        "link_status": "active" if record.get("status") == "success" else "broken",
     }
 
 
