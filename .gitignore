@@ -1,0 +1,118 @@
+# ============================================================================
+# Python Virtual Environments
+# ============================================================================
+venv/
+env/
+ENV/
+.venv/
+virtualenv/
+.env
+
+# ============================================================================
+# Python Files & Packages
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============================================================================
+# Downloaded Videos & Media Files (CRITICAL)
+# ============================================================================
+downloads/
+downloads/**
+logs/
+logs/**
+logs/download_log.jsonl
+
+# Video file extensions
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.flv
+*.wmv
+*.webm
+*.m3u8
+*.ts
+*.mts
+*.m2ts
+*.3gp
+*.3g2
+*.mxf
+
+# ============================================================================
+# IDE & Editor
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+.project
+.pydevproject
+.settings/
+
+# ============================================================================
+# OS Files
+# ============================================================================
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+
+# ============================================================================
+# Testing
+# ============================================================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+*.pyc
+
+# ============================================================================
+# Google/Cloud Credentials (SECURITY CRITICAL)
+# ============================================================================
+*.json
+!package.json
+!requirements.json
+credentials/
+service_account.json
+google_credentials.json
+.env
+.env.local
+.env.*.local
+
+# ============================================================================
+# Temporary & Cache Files
+# ============================================================================
+*.temp
+*.cache
+.cache/
+temp/
+tmp/
+*.part
+*~
+.~*

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { margin-bottom: 30px; }
+        .upload-box {
+            padding: 40px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px dashed rgba(148, 163, 184, 0.3);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-box:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .upload-box.drag-over {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.15);
+            transform: scale(1.02);
+        }
+        input[type="file"] { display: none; }
+        .status { margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-radius: 8px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Test</h1>
+        
+        <div class="upload-box" id="uploadBox">
+            <h2>Drop your file here</h2>
+            <p>or <span style="color: #6366f1; cursor: pointer; font-weight: 600;">click to browse</span></p>
+            <p style="font-size: 0.875rem; color: #94a3b8; margin-top: 8px;">Supports CSV and Excel files</p>
+            <input type="file" id="fileInput" accept=".csv,.xlsx">
+        </div>
+
+        <div class="status" id="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const status = document.getElementById('status');
+
+        // Click to upload
+        uploadBox.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                showStatus(`File selected: ${file.name}`, 'success');
+            }
+        });
+
+        // Prevent defaults for drag events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        // Highlight on drag
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, () => {
+                uploadBox.classList.add('drag-over');
+            });
+        });
+
+        // Remove highlight
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, () => {
+                uploadBox.classList.remove('drag-over');
+            });
+        });
+
+        // Handle drop
+        uploadBox.addEventListener('drop', (e) => {
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const isValid = file.name.endsWith('.csv') || file.name.endsWith('.xlsx');
+                if (isValid) {
+                    fileInput.files = files;
+                    showStatus(`File dropped: ${file.name}`, 'success');
+                } else {
+                    showStatus('Invalid file type. Please use CSV or Excel.', 'error');
+                }
+            }
+        });
+
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        console.log('Upload test page loaded');
+    </script>
+</body>
+</html>

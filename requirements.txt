@@ -1,0 +1,12 @@
+pandas>=2.0
+openpyxl>=3.1
+requests>=2.31
+google-api-python-client>=2.0
+google-auth>=2.0
+fastapi>=0.95
+uvicorn>=0.21
+python-multipart>=0.0.5
+yt-dlp>=2023.0.0
+openai>=1.0.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0

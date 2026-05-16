@@ -1,0 +1,11 @@
+Asset ID,Video Title,Video URL,Backup Link,Campaign
+A001,Brand Promo Q1,https://www.youtube.com/watch?v=abc123,,Q1 Campaign
+A002,Reel Cut v2,https://youtu.be/xyz789,,Q1 Campaign
+A003,Behind the Scenes,https://drive.google.com/file/d/1aBcDeFgHiJk/view,,Q2 Campaign
+A004,Product Demo,https://cdn.example.com/videos/demo.mp4,,Q2 Campaign
+A005,Brand Promo COPY,https://www.youtube.com/watch?v=abc123,,Q1 Campaign
+A006,Messy Link,  https://www.youtube.com//watch?v=messy456  ,,Q3 Campaign
+A007,Training Video,https://vimeo.com/112233,https://cdn.backup.io/training.mp4,Internal
+A008,Missing,N/A,N/A,Q3 Campaign
+A009,Short Clip,https://youtube.com/shorts/short999,,Q4 Campaign
+A010,Webinar Recording,https://media.host.com/rec.mp4?token=abc&expire=123,,Q4 Campaign
